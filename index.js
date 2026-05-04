@@ -9,6 +9,10 @@ const anime = JSON.parse(readFileSync(join(__dirname, 'data/anime.json'), 'utf8'
 const males = JSON.parse(readFileSync(join(__dirname, 'data/males.json'), 'utf8'));
 const females = JSON.parse(readFileSync(join(__dirname, 'data/females.json'), 'utf8'));
 const matching = JSON.parse(readFileSync(join(__dirname, 'data/matching.json'), 'utf8'));
+const dark = JSON.parse(readFileSync(join(__dirname, 'data/dark.json'), 'utf8'));
+const art = JSON.parse(readFileSync(join(__dirname, 'data/art.json'), 'utf8'));
+const cats = JSON.parse(readFileSync(join(__dirname, 'data/cats.json'), 'utf8'));
+const vintage = JSON.parse(readFileSync(join(__dirname, 'data/vintage.json'), 'utf8'));
 
 const PREFIX = '.';
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -19,90 +23,96 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-const firstWords = [
-  'phase', 'safe', 'faded', 'lonely', 'void', 'dark', 'lost', 'echo',
-  'drift', 'ghost', 'cold', 'silent', 'numb', 'still', 'slow', 'blur',
-  'gray', 'dim', 'hollow', 'broken', 'pale', 'muted', 'haze', 'veil',
-  'dusk', 'ash', 'ruin', 'sorrow', 'empty', 'distant', 'faint', 'wither',
-  'ache', 'somber', 'grave', 'bleak', 'dreary', 'gloam', 'sullen', 'stark',
-  'void', 'nether', 'vague', 'murk', 'nocturne', 'hollow', 'wane', 'shade',
-  'gloom', 'barren', 'sparse', 'mellow', 'serene', 'tranquil', 'latent',
-  'lull', 'drift', 'sleep', 'wake', 'flux', 'hush', 'still', 'fallow',
+const wordParts = {
+  first: [
+    'phase', 'faded', 'lonely', 'hollow', 'silent', 'broken', 'distant',
+    'ghost', 'pale', 'haze', 'dusk', 'ash', 'veil', 'somber', 'wither',
+    'muted', 'gloam', 'bleak', 'sullen', 'shade', 'murk', 'barren',
+    'serene', 'latent', 'lull', 'flux', 'lucid', 'void', 'numb',
+    'cold', 'still', 'dim', 'drift', 'lost', 'wane', 'echo',
+    'ruin', 'sorrow', 'ache', 'grave', 'stark', 'nocturne', 'elegy',
+    'solace', 'reverie', 'vestige', 'liminal', 'lacuna', 'penumbra',
+    'gloom', 'sparse', 'mellow', 'tranquil', 'sleep', 'wake', 'hush',
+    'lament', 'embers', 'tender', 'morrow', 'gentle', 'hollow',
+  ],
+  second: [
+    'run', 'trap', 'nights', 'memories', 'echo', 'drift', 'shore',
+    'flame', 'wave', 'rain', 'fall', 'pulse', 'edge', 'realm',
+    'veil', 'shift', 'trace', 'ward', 'path', 'gate', 'vale',
+    'rift', 'flow', 'deep', 'end', 'light', 'break', 'hold',
+    'call', 'reach', 'form', 'space', 'world', 'land', 'line',
+    'bloom', 'tide', 'grave', 'hymn', 'choir', 'verse', 'lore',
+    'borne', 'wraith', 'shade', 'vow', 'pyre', 'dusk', 'dawn',
+    'stride', 'bound', 'crest', 'crown', 'less', 'ward', 'fall',
+  ],
+};
+
+const singleAesthetic = [
+  'vociular', 'solace', 'reverie', 'lacuna', 'penumbra', 'liminal',
+  'vestige', 'elegy', 'solstice', 'tenebrae', 'umbral', 'nocturne',
+  'lethean', 'morphic', 'ephemeral', 'requiem', 'equinox', 'spectre',
+  'serein', 'miasma', 'sonder', 'hiraeth', 'kenopsia', 'chrysalism',
+  'vellichor', 'desiderium', 'melisma', 'eudaimonia', 'oneiros',
+  'aphelion', 'perihelion', 'nadir', 'zenith', 'aurora', 'solaire',
+  'noctuary', 'verity', 'auric', 'ombra', 'lunacy', 'astral',
 ];
-
-const secondWords = [
-  'run', 'trap', 'nights', 'memories', 'echo', 'drift', 'void', 'shore',
-  'light', 'flame', 'wave', 'sky', 'rain', 'fall', 'glow', 'pulse',
-  'edge', 'zone', 'core', 'mind', 'walk', 'path', 'realm', 'veil',
-  'shift', 'loop', 'trace', 'born', 'ward', 'lock', 'less', 'ward',
-  'step', 'break', 'mark', 'call', 'reach', 'hold', 'keep', 'gate',
-  'field', 'line', 'form', 'space', 'place', 'state', 'side', 'mode',
-  'world', 'land', 'vale', 'rift', 'flow', 'stream', 'deep', 'end',
-];
-
-function generateUsername() {
-  const styles = [
-    () => {
-      const w1 = firstWords[Math.floor(Math.random() * firstWords.length)];
-      const w2 = secondWords[Math.floor(Math.random() * secondWords.length)];
-      return w1 + w2;
-    },
-    () => {
-      const w1 = firstWords[Math.floor(Math.random() * firstWords.length)];
-      const w2 = firstWords[Math.floor(Math.random() * firstWords.length)];
-      return w1 + w2;
-    },
-    () => {
-      const w1 = firstWords[Math.floor(Math.random() * firstWords.length)];
-      const w2 = secondWords[Math.floor(Math.random() * secondWords.length)];
-      const num = Math.random() > 0.6 ? Math.floor(Math.random() * 9) : '';
-      return w1 + w2 + num;
-    },
-    () => {
-      const combos = [
-        'vociular', 'solace', 'reverie', 'lacuna', 'penumbra', 'liminal',
-        'vestige', 'ephemeral', 'requiem', 'elegy', 'solstice', 'equinox',
-        'tenebrae', 'umbral', 'nocturne', 'lethean', 'morphic', 'phanic',
-      ];
-      return combos[Math.floor(Math.random() * combos.length)];
-    },
-  ];
-
-  const style = styles[Math.floor(Math.random() * styles.length)];
-  return style();
-}
-
-function generateMultipleUsernames(count = 5) {
-  const names = new Set();
-  while (names.size < count) {
-    names.add(generateUsername());
-  }
-  return [...names];
-}
 
 function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getPfp(category) {
-  switch (category) {
-    case 'males': return { url: randomFrom(males), type: 'males' };
-    case 'females': return { url: randomFrom(females), type: 'females' };
-    case 'anime': return { url: randomFrom(anime), type: 'anime' };
-    case 'matching': {
-      const pair = randomFrom(matching);
-      return { url: pair[0], url2: pair[1], type: 'matching' };
-    }
-    default: {
-      const all = [
-        { pool: males, type: 'males' },
-        { pool: females, type: 'females' },
-        { pool: anime, type: 'anime' },
-      ];
-      const pick = randomFrom(all);
-      return { url: randomFrom(pick.pool), type: pick.type };
-    }
+function generateUsername() {
+  const roll = Math.random();
+  if (roll < 0.15) return randomFrom(singleAesthetic);
+  if (roll < 0.55) return randomFrom(wordParts.first) + randomFrom(wordParts.second);
+  return randomFrom(wordParts.first) + randomFrom(wordParts.first);
+}
+
+function generateMultipleUsernames(count = 5) {
+  const names = new Set();
+  let tries = 0;
+  while (names.size < count && tries < 200) {
+    names.add(generateUsername());
+    tries++;
   }
+  return [...names];
+}
+
+function getRandomUnique(pool, count) {
+  const seen = new Set();
+  const results = [];
+  let tries = 0;
+  const limit = Math.min(count, pool.length);
+  while (results.length < limit && tries < 300) {
+    const url = randomFrom(pool);
+    if (!seen.has(url)) {
+      seen.add(url);
+      results.push(url);
+    }
+    tries++;
+  }
+  return results;
+}
+
+function buildImageEmbeds(urls) {
+  return urls.map(url => new EmbedBuilder().setImage(url).setColor(0x2b2d31));
+}
+
+const pools = { males, females, anime, dark, art, cats, vintage };
+
+function getPfpEmbeds(category) {
+  if (category === 'matching') {
+    const pair = randomFrom(matching);
+    return buildImageEmbeds([pair[0], pair[1]]);
+  }
+  if (category === 'random') {
+    const keys = Object.keys(pools);
+    const pool = pools[randomFrom(keys)];
+    return buildImageEmbeds(getRandomUnique(pool, 10));
+  }
+  const pool = pools[category];
+  if (!pool) return buildImageEmbeds(getRandomUnique(males, 10));
+  return buildImageEmbeds(getRandomUnique(pool, 10));
 }
 
 const client = new Client({
@@ -113,24 +123,48 @@ const client = new Client({
   ],
 });
 
+const pfpChoices = [
+  { name: 'males', value: 'males' },
+  { name: 'females', value: 'females' },
+  { name: 'anime', value: 'anime' },
+  { name: 'matching', value: 'matching' },
+  { name: 'dark', value: 'dark' },
+  { name: 'art', value: 'art' },
+  { name: 'cats', value: 'cats' },
+  { name: 'vintage', value: 'vintage' },
+  { name: 'random', value: 'random' },
+];
+
+const categoryChoices = pfpChoices.filter(c => c.value !== 'matching' && c.value !== 'random');
+
 const slashCommands = [
   new SlashCommandBuilder()
     .setName('generate')
-    .setDescription('generates discord usernames for u'),
+    .setDescription('generates clean aesthetic discord usernames for u'),
   new SlashCommandBuilder()
     .setName('pfps')
-    .setDescription('sends a random pfp')
+    .setDescription('sends up to 10 pfps from a category')
     .addStringOption(opt =>
       opt.setName('category')
         .setDescription('what type of pfp u want')
         .setRequired(false)
-        .addChoices(
-          { name: 'males', value: 'males' },
-          { name: 'females', value: 'females' },
-          { name: 'anime', value: 'anime' },
-          { name: 'matching', value: 'matching' },
-          { name: 'random', value: 'random' },
-        )
+        .addChoices(...pfpChoices)
+    ),
+  new SlashCommandBuilder()
+    .setName('category')
+    .setDescription('get multiple pfps from a specific category')
+    .addStringOption(opt =>
+      opt.setName('category')
+        .setDescription('which category')
+        .setRequired(true)
+        .addChoices(...categoryChoices)
+    )
+    .addIntegerOption(opt =>
+      opt.setName('amount')
+        .setDescription('how many pfps (1-10, default 3)')
+        .setRequired(false)
+        .setMinValue(1)
+        .setMaxValue(10)
     ),
 ].map(cmd => cmd.toJSON());
 
@@ -159,11 +193,15 @@ function handleGenerate(replyFn) {
 }
 
 function handlePfps(category, replyFn) {
-  const result = getPfp(category || 'random');
-  if (result.type === 'matching') {
-    return replyFn({ content: `${result.url}\n${result.url2}` });
-  }
-  return replyFn({ content: result.url });
+  const embeds = getPfpEmbeds(category || 'random');
+  return replyFn({ embeds });
+}
+
+function handleCategory(category, amount, replyFn) {
+  const pool = pools[category];
+  if (!pool) return replyFn({ content: 'invalid category' });
+  const count = Math.min(Math.max(1, amount || 3), 10);
+  return replyFn({ embeds: buildImageEmbeds(getRandomUnique(pool, count)) });
 }
 
 client.once('ready', async () => {
@@ -182,9 +220,13 @@ client.on('messageCreate', async (message) => {
     await handleGenerate((opts) => message.reply(opts));
   } else if (command === 'pfps') {
     const category = args[1]?.toLowerCase() || 'random';
-    const validCats = ['males', 'females', 'anime', 'matching', 'random'];
+    const validCats = pfpChoices.map(c => c.value);
     const cat = validCats.includes(category) ? category : 'random';
     await handlePfps(cat, (opts) => message.reply(opts));
+  } else if (command === 'category') {
+    const category = args[1]?.toLowerCase();
+    const amount = parseInt(args[2]) || 3;
+    await handleCategory(category, amount, (opts) => message.reply(opts));
   }
 });
 
@@ -196,6 +238,10 @@ client.on('interactionCreate', async (interaction) => {
   } else if (interaction.commandName === 'pfps') {
     const category = interaction.options.getString('category') || 'random';
     await handlePfps(category, (opts) => interaction.reply(opts));
+  } else if (interaction.commandName === 'category') {
+    const category = interaction.options.getString('category');
+    const amount = interaction.options.getInteger('amount') || 3;
+    await handleCategory(category, amount, (opts) => interaction.reply(opts));
   }
 });
 
