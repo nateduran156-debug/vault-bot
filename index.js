@@ -1,7 +1,8 @@
-import { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { EmbedBuilder } from 'discord.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -9,10 +10,7 @@ const anime = JSON.parse(readFileSync(join(__dirname, 'data/anime.json'), 'utf8'
 const males = JSON.parse(readFileSync(join(__dirname, 'data/males.json'), 'utf8'));
 const females = JSON.parse(readFileSync(join(__dirname, 'data/females.json'), 'utf8'));
 const matching = JSON.parse(readFileSync(join(__dirname, 'data/matching.json'), 'utf8'));
-const dark = JSON.parse(readFileSync(join(__dirname, 'data/dark.json'), 'utf8'));
-const art = JSON.parse(readFileSync(join(__dirname, 'data/art.json'), 'utf8'));
-const cats = JSON.parse(readFileSync(join(__dirname, 'data/cats.json'), 'utf8'));
-const vintage = JSON.parse(readFileSync(join(__dirname, 'data/vintage.json'), 'utf8'));
+const y2k = JSON.parse(readFileSync(join(__dirname, 'data/y2k.json'), 'utf8'));
 
 const PREFIX = '.';
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -94,25 +92,21 @@ function getRandomUnique(pool, count) {
   return results;
 }
 
-function buildImageEmbeds(urls) {
-  return urls.map(url => new EmbedBuilder().setImage(url).setColor(0x2b2d31));
-}
+const pools = { males, females, anime, y2k };
 
-const pools = { males, females, anime, dark, art, cats, vintage };
-
-function getPfpEmbeds(category) {
+function getPfpContent(category, count = 10) {
   if (category === 'matching') {
     const pair = randomFrom(matching);
-    return buildImageEmbeds([pair[0], pair[1]]);
+    return [pair[0], pair[1]].join('\n');
   }
   if (category === 'random') {
     const keys = Object.keys(pools);
     const pool = pools[randomFrom(keys)];
-    return buildImageEmbeds(getRandomUnique(pool, 10));
+    return getRandomUnique(pool, count).join('\n');
   }
   const pool = pools[category];
-  if (!pool) return buildImageEmbeds(getRandomUnique(males, 10));
-  return buildImageEmbeds(getRandomUnique(pool, 10));
+  if (!pool) return getRandomUnique(males, count).join('\n');
+  return getRandomUnique(pool, count).join('\n');
 }
 
 const client = new Client({
@@ -128,10 +122,7 @@ const pfpChoices = [
   { name: 'females', value: 'females' },
   { name: 'anime', value: 'anime' },
   { name: 'matching', value: 'matching' },
-  { name: 'dark', value: 'dark' },
-  { name: 'art', value: 'art' },
-  { name: 'cats', value: 'cats' },
-  { name: 'vintage', value: 'vintage' },
+  { name: 'y2k', value: 'y2k' },
   { name: 'random', value: 'random' },
 ];
 
@@ -193,15 +184,15 @@ function handleGenerate(replyFn) {
 }
 
 function handlePfps(category, replyFn) {
-  const embeds = getPfpEmbeds(category || 'random');
-  return replyFn({ embeds });
+  const content = getPfpContent(category || 'random', 10);
+  return replyFn({ content });
 }
 
 function handleCategory(category, amount, replyFn) {
   const pool = pools[category];
   if (!pool) return replyFn({ content: 'invalid category' });
   const count = Math.min(Math.max(1, amount || 3), 10);
-  return replyFn({ embeds: buildImageEmbeds(getRandomUnique(pool, count)) });
+  return replyFn({ content: getRandomUnique(pool, count).join('\n') });
 }
 
 client.once('ready', async () => {
